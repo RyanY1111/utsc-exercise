@@ -194,39 +194,26 @@ def ingest_csv_data(filename: str):
     #1 Connect to the database file "utsc-excercise" using one of the helper functions above
     #  and save the return value into a variable called db_connection.
     
-db_connection = sqlite3.connect('utsc-exercise.db')
+    db_connection = connect_to_db('utsc-exercise.db')
 
     #2 Use pandas to load the CSV 'filename' into a dataframe which we'll call 'df'. If you are doing
     # any cleaning of the dataframe after loading it, make a new variable called 'cleaned_df' and store the cleaned
     # dataframe there.
-try:
-        df = pd.read_csv(filename)
-        # Example cleaning step (optional): dropping any rows with missing values
-        cleaned_df = df.dropna()
-    except FileNotFoundError:
-        print(f"Error: The file {filename} was not found.")
-        return
+    df = pd.read_csv(filename)
+    cleaned_df = remove_unnamed_columns(df)
         
     #3 Now that you have the CSV data loaded into a dataframe, you need to insert the data into the SQL database.
     # Using the dataframe that you created above, as well as the database connection that you have instantiated,
     # use one of the helper functions above to insert the data into the database.
-try:
-        cleaned_df.to_sql('employee', con=db_connection, if_exists='append', index=False)
-        db_connection.commit()
-    except Exception as e:
-        print(f"Error: Unable to insert data into the database - {e}")
-    finally:
-        db_connection.close()
+    insert_employee_data_into_db(db_connection, cleaned_df)
 
     #4 Now to show that you've finished processing the CSV file, move the file over to the hist folder 
     # Hint: use shutil.move and read the parameters it takes)
     # Hint: I personally use f-strings to use variables in the middle of strings, so in the destination path to move the file, I'd use f"hist/{filename}"
     # If you want the formal definition of what an f-string does: https://www.geeksforgeeks.org/formatted-string-literals-f-strings-python/
-  try:
-        shutil.move(filename, f"hist/{filename}")
-        print(f"File {filename} moved to hist folder.")
-    except Exception as e:
-        print(f"Error: Unable to move file {filename} to hist folder - {e}")
+    shutil.move(filename, f"hist/{filename}")
+    print(f"File {filename} moved to hist folder.")
+
 
 def print_employee_dataframe():
     """Connects to the database, puts the Employee table into a dataframe, and then prints the dataframe.
